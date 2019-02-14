@@ -100,7 +100,7 @@ const csvPath = path.join(csvDir, 'schedule.csv');
     downloadPath: csvDir,
   });
 
-  log('>>>> Fetching events from Cybozu Calendar...');
+  log('>>>> Fetching events from Cybozu Calendar...\n');
 
   // Login
   await page.goto(config.cybozuUrl);
@@ -132,32 +132,36 @@ const csvPath = path.join(csvDir, 'schedule.csv');
   const csv = fs.readFileSync(csvPath, 'utf8');
   parseCsv(csv).forEach((line, i) => {
     if (i === 0) { return; }
-    const startTime = line[1];
-    const endTime = line[3];
+    try {
+      const startTime = line[1];
+      const endTime = line[3];
 
-    const startMoment = moment(new Date(line[0] + ' ' + startTime));
-    const endMoment = moment(new Date(line[2] + ' ' + endTime));
-    
-    let summary = `${line[5]}`;
-    if (line[4] !== '') {
-      summary = `[${line[4]}] ` + summary;
+      const startMoment = moment(new Date(line[0] + ' ' + startTime));
+      const endMoment = moment(new Date(line[2] + ' ' + endTime));
+      
+      let summary = `${line[5]}`;
+      if (line[4] !== '') {
+        summary = `[${line[4]}] ` + summary;
+      }
+      const location = line[8];
+
+      let start, end;
+      if (startTime === '' && endTime === '') {
+        start = { date: startMoment.format("YYYY-MM-DD") };
+        end = { date: endMoment.format("YYYY-MM-DD") };
+      } else {
+        start = { dateTime: startMoment.toISOString() };
+        end = { dateTime: endMoment.toISOString() };
+      }
+
+      newEvents.push({ start, end, location, summary, });
+    } catch(e) {
+      log(e + '\n');
     }
-    const location = line[8];
-
-    let start, end;
-    if (startTime === '' && endTime === '') {
-      start = { date: startMoment.toDate() };
-      end = { date: endMoment.toDate() };
-    } else {
-      start = { dateTime: startMoment.toISOString() };
-      end = { dateTime: endMoment.toISOString() };
-    }
-
-    newEvents.push({ start, end, location, summary, });
   });
 
   log('DONE\n');
-  log('>>>> Fetching events from Google Calendar...');
+  log('>>>> Fetching events from Google Calendar...\n');
 
   const oldEvents = await calendar.Events.list(config.calendar.calendarId.primary, {
     timeMin: moment().startOf('day').toISOString(),
