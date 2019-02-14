@@ -1,2 +1,4 @@
 config.js
 key.json
+node_modules
+.config
