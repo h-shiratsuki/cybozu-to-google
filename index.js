@@ -138,7 +138,10 @@ const csvPath = path.join(csvDir, 'schedule.csv');
     const startMoment = moment(new Date(line[0] + ' ' + startTime));
     const endMoment = moment(new Date(line[2] + ' ' + endTime));
     
-    const summary = `[${line[4]}] ${line[5]}`;
+    let summary = `${line[5]}`;
+    if (line[4] !== '') {
+      summary = `[${line[4]}] ` + summary;
+    }
     const location = line[8];
 
     let start, end;
