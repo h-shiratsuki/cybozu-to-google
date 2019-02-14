@@ -132,17 +132,25 @@ const csvPath = path.join(csvDir, 'schedule.csv');
   const csv = fs.readFileSync(csvPath, 'utf8');
   parseCsv(csv).forEach((line, i) => {
     if (i === 0) { return; }
+    const startTime = line[1];
+    const endTime = line[3];
 
-    const start = moment(new Date(line[0] + ' ' + line[1]));
-    const end = moment(new Date(line[2] + ' ' + line[3]));
+    const startMoment = moment(new Date(line[0] + ' ' + startTime));
+    const endMoment = moment(new Date(line[2] + ' ' + endTime));
+    
     const summary = `[${line[4]}] ${line[5]} (${start.format("YYYY/MM/DD")})`;
     const location = line[8];
 
-    newEvents.push({
-      start: { dateTime: start.toISOString() },
-      end: { dateTime: end.toISOString() },
-      location, summary,
-    });
+    let start, end;
+    if (startTime === '' && endTime === '') {
+      start = { date: startMoment.toDate() };
+      end = { date: endMoment.toDate() };
+    } else {
+      start = { dateTime: startMoment.toISOString() };
+      end = { dateTime: endMoment.toISOString() };
+    }
+
+    newEvents.push({ start, end, location, summary, });
   });
 
   log('DONE\n');
