@@ -17,6 +17,7 @@ const cli = meow(`
 
   Options
     --config, -c    Pass config file. By default, c2g will read "~/.config/c2g".
+    --json, -j      Pass config json when not use config file.
     --quiet,  -q    Hide debug messages
     --show, -s      Show browser window
     --version, -v   Show version
@@ -38,6 +39,10 @@ const cli = meow(`
     config: {
       type: 'string',
       alias: 'c',
+    },
+    json: {
+      type: 'string',
+      alias: 'j',
     },
     quiet: {
       type: 'boolean',
@@ -73,7 +78,14 @@ const log = cli.flags.quiet ?
 let config = rc('c2g');
 if (cli.flags.config) {
   try {
-    config = JSON.parse(fs.readFileSync(cli.flags.config))
+    config = JSON.parse(fs.readFileSync(cli.flags.config));
+  } catch(e) {
+    console.error(e);
+    process.exit(-1);
+  }
+} else if (cli.flags.json) {
+  try {
+    config = JSON.parse(cli.flags.json);
   } catch(e) {
     console.error(e);
     process.exit(-1);
