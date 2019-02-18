@@ -155,6 +155,7 @@ const csvPath = path.join(csvDir, 'schedule.csv');
       if (line[4] !== '') {
         summary = `[${line[4]}] ` + summary;
       }
+      const description = line[6];
       const location = line[8];
 
       let start, end;
@@ -166,7 +167,7 @@ const csvPath = path.join(csvDir, 'schedule.csv');
         end = { dateTime: endMoment.toISOString() };
       }
 
-      newEvents.push({ start, end, location, summary, });
+      newEvents.push({ start, end, location, summary, description });
     } catch(e) {
       log(e + '\n');
     }
