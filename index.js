@@ -145,11 +145,29 @@ const csvPath = path.join(csvDir, 'schedule.csv');
   parseCsv(csv).forEach((line, i) => {
     if (i === 0) { return; }
     try {
-      const startTime = line[1];
-      const endTime = line[3];
+      let startDate = line[0];
+      let startTime = line[1];
+      let endDate = line[2];
+      let endTime = line[3];
 
-      const startMoment = moment(new Date(line[0] + ' ' + startTime));
-      const endMoment = moment(new Date(line[2] + ' ' + endTime));
+      // Same day.
+      if (startDate === endDate) {
+        // Only end time is empty.
+        if (startTime !== '' && endTime === '') {
+          endTime = '23:59:59';
+        }
+      } else if (startDate > endDate) {
+        // Swap if the date is reversed.
+        const tmpDate = startDate;
+        const tmpTime = startTime;
+        startDate = endDate;
+        startTime = endTime;
+        endDate = tmpDate;
+        endTime = tmpTime;
+      }
+
+      const startMoment = moment(new Date(startDate + ' ' + startTime));
+      const endMoment = moment(new Date(endDate + ' ' + endTime));
       
       let summary = `${line[5]}`;
       if (line[4] !== '') {
