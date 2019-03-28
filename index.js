@@ -28,11 +28,11 @@ const cli = meow(`
       >>>> Fetching events from Cybozu Calendar...DONE
       >>>> Fetching events from Google Calendar...DONE
       >>>> Inserting new events...
-        Inserted: [会議] B社MTG (2018/08/16)
-        Inserted: [会議] 目標面談 (2018/10/31)
+        Inserted: [会議] B社MTG
+        Inserted: [会議] 目標面談
       >>>> Inserted 2 events.
       >>>> Deleting removed events...
-      	Deleted: [外出] 幕張メッセ (2018/08/17)
+      	Deleted: [外出] 幕張メッセ
       >>>> Deleted 1 events.
 `, {
   flags: {

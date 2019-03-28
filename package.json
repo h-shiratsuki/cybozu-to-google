@@ -1,6 +1,6 @@
 {
   "name": "@fand/cybozu-to-google",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -14,9 +14,9 @@
   "dependencies": {
     "csv-parse": "^2.5.0",
     "meow": "^5.0.0",
-    "moment": "^2.22.2",
+    "moment": "^2.24.0",
     "node-google-calendar": "^1.1.1",
-    "puppeteer": "^1.7.0",
+    "puppeteer": "^1.13.0",
     "rc": "^1.2.8"
   }
 }
