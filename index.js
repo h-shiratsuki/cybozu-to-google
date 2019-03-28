@@ -103,6 +103,25 @@ const day = now.getDate();
 const csvDir = path.join(os.tmpdir(), Date.now() + '');
 const csvPath = path.join(csvDir, 'schedule.csv');
 
+const isEqualDate = (t1, t2) => {
+  let isEqualStart = false;
+  let isEqualEnd = false;
+  const check = (d1, d2) => {
+    return new Date(d1).getTime() === new Date(d2).getTime();
+  };
+  if (t1.start.date && t2.start.date && check(t1.start.date, t2.start.date)) {
+    isEqualStart = true;
+  } else if (t1.start.dateTime && t2.start.dateTime && check(t1.start.dateTime, t2.start.dateTime)) {
+    isEqualStart = true;
+  }
+  if (t1.end.date && t2.end.date && check(t1.end.date, t2.end.date)) {
+    isEqualEnd = true;
+  } else if (t1.end.dateTime && t2.end.dateTime && check(t1.end.dateTime, t2.end.dateTime)) {
+    isEqualEnd = true;
+  }
+  return isEqualStart && isEqualEnd;
+};
+
 // Main
 (async () => {
   const browser = await puppeteer.launch({ headless: !cli.flags.show });
@@ -207,27 +226,47 @@ const csvPath = path.join(csvDir, 'schedule.csv');
 
   let insertedCount = 0;
   for (const event of newEvents) {
-    if (oldEvents.findIndex(e => e.summary === event.summary) !== -1) {
-      continue;
-    }
-    await calendar.Events.insert(config.calendar.calendarId.primary, event);
+    let isEqual = false;
 
-    log(`\tInserted: ${event.summary}\n`);
-    insertedCount++;
+    for (const old of oldEvents) {
+      if (old.summary === event.summary) {
+        // Check date and time.
+        if (isEqual = isEqualDate(old, event)) {
+          break;
+        }
+      }
+    }
+    
+    if (!isEqual) {
+      await calendar.Events.insert(config.calendar.calendarId.primary, event);
+  
+      log(`\tInserted: ${event.summary}\n`);
+      insertedCount++;
+    }
   }
 
   log(`>>>> Inserted ${insertedCount} events.\n`);
   log(`>>>> Deleting removed events...\n`);
 
   let deletedCount = 0;
-  for (const event of oldEvents) {
-    if (newEvents.findIndex(e => e.summary === event.summary) !== -1) {
-      continue;
-    }
-    await calendar.Events.delete(config.calendar.calendarId.primary, event.id, { sendNotifications: true });
+  for (const old of oldEvents) {
+    let isEqual = false;
 
-    log(`\tDeleted: ${event.summary}\n`);
-    deletedCount++;
+    for (const event of newEvents) {
+      if (old.summary === event.summary) {
+        // Check date and time.
+        if (isEqual = isEqualDate(old, event)) {
+          break;
+        }
+      }
+    }
+
+    if (!isEqual) {
+      await calendar.Events.delete(config.calendar.calendarId.primary, old.id, { sendNotifications: true });
+
+      log(`\tDeleted: ${old.summary}\n`);
+      deletedCount++;
+    }
   }
   log(`>>>> Deleted ${deletedCount} events.\n`);
 })();
