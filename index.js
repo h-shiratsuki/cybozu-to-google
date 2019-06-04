@@ -186,7 +186,7 @@ const isEqualDate = (t1, t2) => {
       }
 
       const startMoment = moment(new Date(startDate + ' ' + startTime));
-      const endMoment = moment(new Date(endDate + ' ' + endTime));
+      let endMoment = moment(new Date(endDate + ' ' + endTime));
       
       let summary = `${line[5]}`;
       if (line[4] !== '') {
@@ -197,6 +197,10 @@ const isEqualDate = (t1, t2) => {
 
       let start, end;
       if (startTime === '' && endTime === '') {
+        if (startMoment.isSameOrAfter(endMoment)) {
+          endMoment = startMoment.clone();
+          endMoment.add(1, 'd');
+        }
         start = { date: startMoment.format("YYYY-MM-DD") };
         end = { date: endMoment.format("YYYY-MM-DD") };
       } else {
