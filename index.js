@@ -76,20 +76,17 @@ const log = cli.flags.quiet ?
   (str) => process.stdout.write(str);
 
 let config = rc('c2g');
-if (cli.flags.config) {
-  try {
+try {
+  if (cli.flags.config) {
     config = JSON.parse(fs.readFileSync(cli.flags.config));
-  } catch(e) {
-    console.error(e);
-    process.exit(-1);
-  }
-} else if (cli.flags.json) {
-  try {
+  } else if (cli.flags.json) {
     config = JSON.parse(cli.flags.json);
-  } catch(e) {
-    console.error(e);
-    process.exit(-1);
+  } else {
+    config = JSON.parse(fs.readFileSync('./.config/c2g'));
   }
+} catch(e) {
+  console.error(e);
+  process.exit(-1);
 }
 
 // Utils
@@ -169,13 +166,7 @@ const isEqualDate = (t1, t2) => {
       let endDate = line[2];
       let endTime = line[3];
 
-      // Same day.
-      if (startDate === endDate) {
-        // Only end time is empty.
-        if (startTime !== '' && endTime === '') {
-          endTime = '23:59:59';
-        }
-      } else if (startDate > endDate) {
+      if (startDate > endDate) {
         // Swap if the date is reversed.
         const tmpDate = startDate;
         const tmpTime = startTime;
@@ -183,6 +174,11 @@ const isEqualDate = (t1, t2) => {
         startTime = endTime;
         endDate = tmpDate;
         endTime = tmpTime;
+      }
+
+      // Only end time is empty.
+      if (startTime !== '' && endTime === '') {
+        endTime = '23:59:59';
       }
 
       const startMoment = moment(new Date(startDate + ' ' + startTime));
@@ -199,8 +195,10 @@ const isEqualDate = (t1, t2) => {
       if (startTime === '' && endTime === '') {
         if (startMoment.isSameOrAfter(endMoment)) {
           endMoment = startMoment.clone();
-          endMoment.add(1, 'd');
         }
+        // google's end date is next day. 
+        endMoment.add(1, 'd');
+
         start = { date: startMoment.format("YYYY-MM-DD") };
         end = { date: endMoment.format("YYYY-MM-DD") };
       } else {
