@@ -161,41 +161,36 @@ const isEqualDate = (t1, t2) => {
   parseCsv(csv).forEach((line, i) => {
     if (i === 0) { return; }
     try {
+      let isDateOnly = false;
       let startDate = line[0];
       let startTime = line[1];
       let endDate = line[2];
       let endTime = line[3];
 
-      if (startDate > endDate) {
-        // Swap if the date is reversed.
-        const tmpDate = startDate;
-        const tmpTime = startTime;
-        startDate = endDate;
-        startTime = endTime;
-        endDate = tmpDate;
-        endTime = tmpTime;
+      if (startTime === '') {
+        // All Date Only.
+        if (endTime === '') {
+          isDateOnly = true;
+        }
+      } else {
+        // Only end time is empty.
+        if (endTime === '') {
+          endTime = '23:59:59';
+        }
       }
 
-      // Only end time is empty.
-      if (startTime !== '' && endTime === '') {
-        endTime = '23:59:59';
-      }
-
-      const startMoment = moment(new Date(startDate + ' ' + startTime));
+      let startMoment = moment(new Date(startDate + ' ' + startTime));
       let endMoment = moment(new Date(endDate + ' ' + endTime));
       
-      let summary = `${line[5]}`;
-      if (line[4] !== '') {
-        summary = `[${line[4]}] ` + summary;
+      // Swap if the date is reversed.
+      if (startMoment.isAfter(endMoment)) {
+        const tmpMoment = startMoment;
+        startMoment = endMoment;
+        endMoment = tmpMoment;
       }
-      const description = line[6];
-      const location = line[8];
 
       let start, end;
-      if (startTime === '' && endTime === '') {
-        if (startMoment.isSameOrAfter(endMoment)) {
-          endMoment = startMoment.clone();
-        }
+      if (isDateOnly) {
         // google's end date is next day. 
         endMoment.add(1, 'd');
 
@@ -205,6 +200,14 @@ const isEqualDate = (t1, t2) => {
         start = { dateTime: startMoment.toISOString() };
         end = { dateTime: endMoment.toISOString() };
       }
+
+      // Data.
+      let summary = `${line[5]}`;
+      if (line[4] !== '') {
+        summary = `[${line[4]}] ` + summary;
+      }
+      const description = line[6];
+      const location = line[8];
 
       newEvents.push({ start, end, location, summary, description });
     } catch(e) {
